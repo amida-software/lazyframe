@@ -13,7 +13,6 @@ const Lazyframe = () => {
     thumbnail: undefined,
     title: undefined,
     initialized: false,
-    y: undefined,
     debounce: 250,
     lazyload: true,
     autoplay: true,
@@ -122,10 +121,7 @@ const Lazyframe = () => {
 
     const options = Object.assign({},
       settings,
-      attr,
-      {
-        y: el.offsetTop
-      }
+      attr
     );
 
     if (options.vendor) {
@@ -135,6 +131,15 @@ const Lazyframe = () => {
 
     return options;
 
+  }
+
+  function getCoords(elem) {
+    let box = elem.getBoundingClientRect();
+
+    return {
+      top: box.top + pageYOffset,
+      left: box.left + pageXOffset
+    };
   }
 
   function useApi(settings) {
@@ -211,7 +216,7 @@ const Lazyframe = () => {
     }
 
     elements
-      .filter(el => el.settings.y < height)
+      .filter(el => getCoords(el.el).top < height)
       .forEach(initElement);
 
     const onScroll = debounce(() => {
@@ -220,8 +225,10 @@ const Lazyframe = () => {
       lastY = window.pageYOffset;
 
       if (up) {
+        elements.forEach(function(el) {
+        });
         elements
-          .filter(el => el.settings.y < (height + lastY) && el.settings.initialized === false)
+          .filter(el => getCoords(el.el).top < (height + lastY) && el.settings.initialized === false)
           .forEach(initElement);
       }
 
@@ -297,7 +304,7 @@ const Lazyframe = () => {
     iframeNode.setAttribute('src', settings.src);
     iframeNode.setAttribute('frameborder', 0);
     iframeNode.setAttribute('allowfullscreen', '');
-    
+
     if (settings.autoplay) {
       iframeNode.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
     }
